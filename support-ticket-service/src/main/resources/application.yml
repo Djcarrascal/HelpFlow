@@ -1,0 +1,53 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: support-ticket-service
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/helpflow}
+    username: ${DB_USER:helpflow}
+    password: ${DB_PASSWORD:helpflow}
+  jpa:
+    open-in-view: false          # evita consultas lazy ocultas en la capa web
+    hibernate:
+      ddl-auto: validate         # Flyway crea las tablas; Hibernate solo verifica
+    properties:
+      hibernate:
+        default_batch_fetch_size: 20   # mitiga N+1 en colecciones lazy
+  flyway:
+    enabled: true
+
+helpflow:
+  jwt:
+    secret: ${JWT_SECRET:2ylE+OnRx31qbB+XB12P0onoklSq+WbxeLT97emXKww=}
+    expiration-minutes: ${JWT_EXPIRATION_MINUTES:60}
+  dispatch:
+    base-url: ${DISPATCH_URL:http://localhost:8081}
+  escalamiento:
+    cron: "0 */5 * * * *"        # cada 5 minutos
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: always
+  info:
+    env:
+      enabled: true
+
+info:
+  app:
+    name: HelpFlow support-ticket-service
+    description: Gestión de tickets de soporte TI
+    version: 1.0.0
+
+logging:
+  structured:
+    format:
+      console: ecs               # logs en JSON (logging estructurado)
+  level:
+    com.helpflow: INFO
