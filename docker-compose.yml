@@ -1,0 +1,47 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: helpflow
+      POSTGRES_USER: helpflow
+      POSTGRES_PASSWORD: helpflow
+    ports:
+      - "5433:5432"          # 5433 en el host para no chocar con el PostgreSQL de desarrollo
+    volumes:
+      - helpflow-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U helpflow -d helpflow"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  technician-dispatch-service:
+    build: ./technician-dispatch-service
+    ports:
+      - "8081:8081"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8081/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  support-ticket-service:
+    build: ./support-ticket-service
+    ports:
+      - "8080:8080"
+    environment:
+      DB_URL: jdbc:postgresql://db:5432/helpflow
+      DB_USER: helpflow
+      DB_PASSWORD: helpflow
+      DISPATCH_URL: http://technician-dispatch-service:8081
+      JWT_SECRET: ${JWT_SECRET:-2ylE+OnRx31qbB+XB12P0onoklSq+WbxeLT97emXKww=}
+      JWT_EXPIRATION_MINUTES: 60
+    depends_on:
+      db:
+        condition: service_healthy     # espera a que PostgreSQL acepte conexiones
+      technician-dispatch-service:
+        condition: service_healthy
+
+volumes:
+  helpflow-data:
