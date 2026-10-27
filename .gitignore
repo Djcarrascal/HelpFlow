@@ -1,0 +1,10 @@
+# artefactos de compilación de Maven
+target/
+# configuración local del IDE
+.idea/
+*.iml
+.vscode/
+# archivos de macOS
+.DS_Store
+# variables locales que no deben subirse
+.env
