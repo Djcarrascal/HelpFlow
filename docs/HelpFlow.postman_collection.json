@@ -5,15 +5,42 @@
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
-    { "key": "baseUrl", "value": "http://localhost:8080" },
-    { "key": "dispatchUrl", "value": "http://localhost:8081" },
-    { "key": "tokenAna", "value": "" },
-    { "key": "tokenLuis", "value": "" },
-    { "key": "tokenAdmin", "value": "" },
-    { "key": "tokenTecnico", "value": "" },
-    { "key": "ticketId", "value": "" },
-    { "key": "tecnicoCorreo", "value": "" },
-    { "key": "nuevoUsuarioId", "value": "" }
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "dispatchUrl",
+      "value": "http://localhost:8081"
+    },
+    {
+      "key": "tokenAna",
+      "value": ""
+    },
+    {
+      "key": "tokenLuis",
+      "value": ""
+    },
+    {
+      "key": "tokenAdmin",
+      "value": ""
+    },
+    {
+      "key": "tokenTecnico",
+      "value": ""
+    },
+    {
+      "key": "ticketId",
+      "value": ""
+    },
+    {
+      "key": "tecnicoCorreo",
+      "value": ""
+    },
+    {
+      "key": "nuevoUsuarioId",
+      "value": ""
+    }
   ],
   "item": [
     {
@@ -21,85 +48,181 @@
       "item": [
         {
           "name": "Registrar usuario (201)",
-          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
-            "// En una segunda ejecución da 409 porque el documento ya existe",
-            "pm.test('201 o 409', () => pm.expect(pm.response.code).to.be.oneOf([201, 409]));",
-            "if (pm.response.code === 201) pm.collectionVariables.set('nuevoUsuarioId', pm.response.json().id);"
-          ] } }],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// En una segunda ejecución da 409 porque el documento ya existe",
+                  "pm.test('201 o 409', () => pm.expect(pm.response.code).to.be.oneOf([201, 409]));",
+                  "if (pm.response.code === 201) pm.collectionVariables.set('nuevoUsuarioId', pm.response.json().id);"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": "{{baseUrl}}/auth/register",
-            "body": { "mode": "raw", "raw": "{\n  \"documento\": \"55667788\",\n  \"nombre\": \"Marta Ruiz\",\n  \"correo\": \"marta@helpflow.com\",\n  \"password\": \"Segura2026*\",\n  \"sede\": \"MEDELLIN\",\n  \"area\": \"COMPRAS\"\n}" }
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"documento\": \"55667788\",\n  \"nombre\": \"Marta Ruiz\",\n  \"correo\": \"marta@helpflow.com\",\n  \"password\": \"Segura2026*\",\n  \"sede\": \"MEDELLIN\",\n  \"area\": \"COMPRAS\"\n}"
+            }
           }
         },
         {
           "name": "Registrar con correo no corporativo (400)",
-          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
-            "pm.test('400 con errores.correo', () => {",
-            "  pm.response.to.have.status(400);",
-            "  pm.expect(pm.response.json().errores).to.have.property('correo');",
-            "});"
-          ] } }],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400 con errores.correo', () => {",
+                  "  pm.response.to.have.status(400);",
+                  "  pm.expect(pm.response.json().errores).to.have.property('correo');",
+                  "});"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": "{{baseUrl}}/auth/register",
-            "body": { "mode": "raw", "raw": "{\n  \"documento\": \"99887766\",\n  \"nombre\": \"Pedro\",\n  \"correo\": \"pedro@gmail.com\",\n  \"password\": \"Segura2026*\",\n  \"sede\": \"MEDELLIN\",\n  \"area\": \"VENTAS\"\n}" }
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"documento\": \"99887766\",\n  \"nombre\": \"Pedro\",\n  \"correo\": \"pedro@gmail.com\",\n  \"password\": \"Segura2026*\",\n  \"sede\": \"MEDELLIN\",\n  \"area\": \"VENTAS\"\n}"
+            }
           }
         },
         {
           "name": "Login Ana",
-          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
-            "pm.test('login 200', () => pm.response.to.have.status(200));",
-            "pm.collectionVariables.set('tokenAna', pm.response.json().token);"
-          ] } }],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('login 200', () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set('tokenAna', pm.response.json().token);"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": "{{baseUrl}}/auth/login",
-            "body": { "mode": "raw", "raw": "{\n  \"correo\": \"ana@helpflow.com\",\n  \"password\": \"Password123*\"\n}" }
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"ana@helpflow.com\",\n  \"password\": \"Password123*\"\n}"
+            }
           }
         },
         {
           "name": "Login Luis",
-          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
-            "pm.test('login 200', () => pm.response.to.have.status(200));",
-            "pm.collectionVariables.set('tokenLuis', pm.response.json().token);"
-          ] } }],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('login 200', () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set('tokenLuis', pm.response.json().token);"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": "{{baseUrl}}/auth/login",
-            "body": { "mode": "raw", "raw": "{\n  \"correo\": \"luis@helpflow.com\",\n  \"password\": \"Password123*\"\n}" }
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"luis@helpflow.com\",\n  \"password\": \"Password123*\"\n}"
+            }
           }
         },
         {
           "name": "Login Admin",
-          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
-            "pm.test('login 200', () => pm.response.to.have.status(200));",
-            "pm.collectionVariables.set('tokenAdmin', pm.response.json().token);"
-          ] } }],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('login 200', () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set('tokenAdmin', pm.response.json().token);"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": "{{baseUrl}}/auth/login",
-            "body": { "mode": "raw", "raw": "{\n  \"correo\": \"admin@helpflow.com\",\n  \"password\": \"Password123*\"\n}" }
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"admin@helpflow.com\",\n  \"password\": \"Password123*\"\n}"
+            }
           }
         },
         {
           "name": "Login con clave errónea (401)",
-          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
-            "pm.test('401 en ProblemDetail', () => {",
-            "  pm.response.to.have.status(401);",
-            "  pm.expect(pm.response.json()).to.have.property('traceId');",
-            "});"
-          ] } }],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('401 en ProblemDetail', () => {",
+                  "  pm.response.to.have.status(401);",
+                  "  pm.expect(pm.response.json()).to.have.property('traceId');",
+                  "});"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": "{{baseUrl}}/auth/login",
-            "body": { "mode": "raw", "raw": "{\n  \"correo\": \"ana@helpflow.com\",\n  \"password\": \"incorrecta\"\n}" }
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"ana@helpflow.com\",\n  \"password\": \"incorrecta\"\n}"
+            }
           }
         }
       ]
@@ -109,128 +232,320 @@
       "item": [
         {
           "name": "Crear ticket (Ana)",
-          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
-            "pm.test('ticket creado', () => pm.response.to.have.status(201));",
-            "const t = pm.response.json();",
-            "pm.collectionVariables.set('ticketId', t.id);",
-            "if (t.tecnicoCodigo) {",
-            "  pm.collectionVariables.set('tecnicoCorreo', 'tec' + t.tecnicoCodigo.substring(4) + '@helpflow.com');",
-            "}",
-            "pm.test('queda ASIGNADO', () => pm.expect(t.estado).to.eql('ASIGNADO'));"
-          ] } }],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('ticket creado', () => pm.response.to.have.status(201));",
+                  "const t = pm.response.json();",
+                  "pm.collectionVariables.set('ticketId', t.id);",
+                  "if (t.tecnicoCodigo) {",
+                  "  pm.collectionVariables.set('tecnicoCorreo', 'tec' + t.tecnicoCodigo.substring(4) + '@helpflow.com');",
+                  "}",
+                  "pm.test('queda ASIGNADO', () => pm.expect(t.estado).to.eql('ASIGNADO'));"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
-            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{tokenAna}}" }] },
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenAna}}"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": "{{baseUrl}}/api/tickets",
-            "body": { "mode": "raw", "raw": "{\n  \"titulo\": \"Sin acceso a la VPN\",\n  \"descripcion\": \"Desde esta mañana la VPN rechaza la conexión\",\n  \"categoria\": \"RED\",\n  \"prioridad\": \"ALTA\",\n  \"sede\": \"BARRANQUILLA\",\n  \"activoAfectado\": \"Portátil ACT-1032\"\n}" }
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Sin acceso a la VPN\",\n  \"descripcion\": \"Desde esta mañana la VPN rechaza la conexión\",\n  \"categoria\": \"RED\",\n  \"prioridad\": \"ALTA\",\n  \"sede\": \"BARRANQUILLA\",\n  \"activoAfectado\": \"Portátil ACT-1032\"\n}"
+            }
           }
         },
         {
           "name": "Listar mis tickets (Ana)",
-          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
-            "pm.test('200', () => pm.response.to.have.status(200));"
-          ] } }],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "GET",
-            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{tokenAna}}" }] },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenAna}}"
+                }
+              ]
+            },
             "url": "{{baseUrl}}/api/tickets"
           }
         },
         {
           "name": "Historial del ticket",
-          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
-            "pm.test('CREADO y ASIGNADO', () => {",
-            "  const h = pm.response.json();",
-            "  pm.expect(h[0].accion).to.eql('CREADO');",
-            "  pm.expect(h[1].accion).to.eql('ASIGNADO');",
-            "});"
-          ] } }],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CREADO y ASIGNADO', () => {",
+                  "  const h = pm.response.json();",
+                  "  pm.expect(h[0].accion).to.eql('CREADO');",
+                  "  pm.expect(h[1].accion).to.eql('ASIGNADO');",
+                  "});"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "GET",
-            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{tokenAna}}" }] },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenAna}}"
+                }
+              ]
+            },
             "url": "{{baseUrl}}/api/tickets/{{ticketId}}/historial"
           }
         },
         {
           "name": "Login técnico asignado",
-          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
-            "pm.test('login 200', () => pm.response.to.have.status(200));",
-            "pm.collectionVariables.set('tokenTecnico', pm.response.json().token);"
-          ] } }],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('login 200', () => pm.response.to.have.status(200));",
+                  "pm.collectionVariables.set('tokenTecnico', pm.response.json().token);"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": "{{baseUrl}}/auth/login",
-            "body": { "mode": "raw", "raw": "{\n  \"correo\": \"{{tecnicoCorreo}}\",\n  \"password\": \"Password123*\"\n}" }
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"correo\": \"{{tecnicoCorreo}}\",\n  \"password\": \"Password123*\"\n}"
+            }
           }
         },
         {
           "name": "Técnico: EN_PROGRESO",
-          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
-            "pm.test('200 EN_PROGRESO', () => pm.expect(pm.response.json().estado).to.eql('EN_PROGRESO'));"
-          ] } }],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 EN_PROGRESO', () => pm.expect(pm.response.json().estado).to.eql('EN_PROGRESO'));"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "PATCH",
-            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{tokenTecnico}}" }] },
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenTecnico}}"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": "{{baseUrl}}/api/tickets/{{ticketId}}/estado",
-            "body": { "mode": "raw", "raw": "{\n  \"estado\": \"EN_PROGRESO\"\n}" }
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"EN_PROGRESO\"\n}"
+            }
           }
         },
         {
           "name": "Técnico: RESUELTO sin observación (400)",
-          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
-            "pm.test('400 con errores.observacion', () => {",
-            "  pm.response.to.have.status(400);",
-            "  pm.expect(pm.response.json().errores).to.have.property('observacion');",
-            "});"
-          ] } }],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400 con errores.observacion', () => {",
+                  "  pm.response.to.have.status(400);",
+                  "  pm.expect(pm.response.json().errores).to.have.property('observacion');",
+                  "});"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "PATCH",
-            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{tokenTecnico}}" }] },
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenTecnico}}"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": "{{baseUrl}}/api/tickets/{{ticketId}}/estado",
-            "body": { "mode": "raw", "raw": "{\n  \"estado\": \"RESUELTO\"\n}" }
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"RESUELTO\"\n}"
+            }
           }
         },
         {
           "name": "Técnico: RESUELTO con observación",
-          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
-            "pm.test('200 RESUELTO', () => pm.expect(pm.response.json().estado).to.eql('RESUELTO'));"
-          ] } }],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 RESUELTO', () => pm.expect(pm.response.json().estado).to.eql('RESUELTO'));"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "PATCH",
-            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{tokenTecnico}}" }] },
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenTecnico}}"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": "{{baseUrl}}/api/tickets/{{ticketId}}/estado",
-            "body": { "mode": "raw", "raw": "{\n  \"estado\": \"RESUELTO\",\n  \"observacion\": \"Se reinició el túnel VPN\"\n}" }
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"RESUELTO\",\n  \"observacion\": \"Se reinició el túnel VPN\"\n}"
+            }
           }
         },
         {
           "name": "Transición inválida RESUELTO -> CANCELADO (409)",
-          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
-            "pm.test('409', () => pm.response.to.have.status(409));"
-          ] } }],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('409', () => pm.response.to.have.status(409));"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "PATCH",
-            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{tokenTecnico}}" }] },
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenTecnico}}"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": "{{baseUrl}}/api/tickets/{{ticketId}}/estado",
-            "body": { "mode": "raw", "raw": "{\n  \"estado\": \"CANCELADO\",\n  \"observacion\": \"x\"\n}" }
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"CANCELADO\",\n  \"observacion\": \"x\"\n}"
+            }
           }
         },
         {
           "name": "Técnico: CERRADO",
-          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
-            "pm.test('200 CERRADO', () => pm.expect(pm.response.json().estado).to.eql('CERRADO'));"
-          ] } }],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 CERRADO', () => pm.expect(pm.response.json().estado).to.eql('CERRADO'));"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "PATCH",
-            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{tokenTecnico}}" }] },
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenTecnico}}"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": "{{baseUrl}}/api/tickets/{{ticketId}}/estado",
-            "body": { "mode": "raw", "raw": "{\n  \"estado\": \"CERRADO\",\n  \"observacion\": \"Confirmado con el usuario\"\n}" }
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"CERRADO\",\n  \"observacion\": \"Confirmado con el usuario\"\n}"
+            }
           }
         }
       ]
@@ -240,86 +555,263 @@
       "item": [
         {
           "name": "Luis consulta ticket de Ana (403)",
-          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
-            "pm.test('403', () => pm.response.to.have.status(403));"
-          ] } }],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('403', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "GET",
-            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{tokenLuis}}" }] },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenLuis}}"
+                }
+              ]
+            },
             "url": "{{baseUrl}}/api/tickets/{{ticketId}}"
           }
         },
         {
           "name": "Sin token (401)",
-          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
-            "pm.test('401', () => pm.response.to.have.status(401));"
-          ] } }],
-          "request": { "method": "GET", "url": "{{baseUrl}}/api/tickets" }
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('401', () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/tickets"
+          }
+        },
+        {
+          "name": "Token inválido (401 token-invalido)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('401 token-invalido', () => {",
+                  "  pm.response.to.have.status(401);",
+                  "  pm.expect(pm.response.json().type).to.include('token-invalido');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "esto.no.es-un-jwt"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/api/tickets"
+          }
         },
         {
           "name": "Crear ticket para reasignar",
-          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
-            "pm.test('201', () => pm.response.to.have.status(201));",
-            "pm.collectionVariables.set('ticketId', pm.response.json().id);"
-          ] } }],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('201', () => pm.response.to.have.status(201));",
+                  "pm.collectionVariables.set('ticketId', pm.response.json().id);"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
-            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{tokenAna}}" }] },
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenAna}}"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": "{{baseUrl}}/api/tickets",
-            "body": { "mode": "raw", "raw": "{\n  \"titulo\": \"Impresora sin red\",\n  \"descripcion\": \"La impresora del piso 3 no aparece en la red\",\n  \"categoria\": \"RED\",\n  \"prioridad\": \"MEDIA\",\n  \"sede\": \"BARRANQUILLA\",\n  \"activoAfectado\": \"Impresora IMP-03\"\n}" }
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Impresora sin red\",\n  \"descripcion\": \"La impresora del piso 3 no aparece en la red\",\n  \"categoria\": \"RED\",\n  \"prioridad\": \"MEDIA\",\n  \"sede\": \"BARRANQUILLA\",\n  \"activoAfectado\": \"Impresora IMP-03\"\n}"
+            }
           }
         },
         {
           "name": "Admin reasigna a TEC-018",
-          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
-            "pm.test('200 con TEC-018', () => pm.expect(pm.response.json().tecnicoCodigo).to.eql('TEC-018'));"
-          ] } }],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 con TEC-018', () => pm.expect(pm.response.json().tecnicoCodigo).to.eql('TEC-018'));"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "PATCH",
-            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{tokenAdmin}}" }] },
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenAdmin}}"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": "{{baseUrl}}/api/tickets/{{ticketId}}/reasignar",
-            "body": { "mode": "raw", "raw": "{\n  \"tecnicoCodigo\": \"TEC-018\",\n  \"observacion\": \"Balanceo de carga\"\n}" }
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tecnicoCodigo\": \"TEC-018\",\n  \"observacion\": \"Balanceo de carga\"\n}"
+            }
           }
         },
         {
           "name": "Admin reasigna a TEC-004 inactivo (422)",
-          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
-            "pm.test('422', () => pm.response.to.have.status(422));"
-          ] } }],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('422', () => pm.response.to.have.status(422));"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "PATCH",
-            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{tokenAdmin}}" }] },
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenAdmin}}"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": "{{baseUrl}}/api/tickets/{{ticketId}}/reasignar",
-            "body": { "mode": "raw", "raw": "{\n  \"tecnicoCodigo\": \"TEC-004\",\n  \"observacion\": \"Prueba técnico inactivo\"\n}" }
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tecnicoCodigo\": \"TEC-004\",\n  \"observacion\": \"Prueba técnico inactivo\"\n}"
+            }
           }
         },
         {
           "name": "Ana intenta cambiar estado (403)",
-          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
-            "pm.test('403', () => pm.response.to.have.status(403));"
-          ] } }],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('403', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "PATCH",
-            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{tokenAna}}" }] },
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenAna}}"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": "{{baseUrl}}/api/tickets/{{ticketId}}/estado",
-            "body": { "mode": "raw", "raw": "{\n  \"estado\": \"EN_PROGRESO\"\n}" }
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"estado\": \"EN_PROGRESO\"\n}"
+            }
           }
         },
         {
           "name": "Categoría inválida (400)",
-          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
-            "pm.test('400', () => pm.response.to.have.status(400));"
-          ] } }],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
-            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{tokenAna}}" }] },
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenAna}}"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": "{{baseUrl}}/api/tickets",
-            "body": { "mode": "raw", "raw": "{\n  \"titulo\": \"Prueba\",\n  \"descripcion\": \"Categoría que no existe\",\n  \"categoria\": \"COCINA\",\n  \"prioridad\": \"ALTA\",\n  \"sede\": \"BARRANQUILLA\",\n  \"activoAfectado\": \"N/A\"\n}" }
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Prueba\",\n  \"descripcion\": \"Categoría que no existe\",\n  \"categoria\": \"COCINA\",\n  \"prioridad\": \"ALTA\",\n  \"sede\": \"BARRANQUILLA\",\n  \"activoAfectado\": \"N/A\"\n}"
+            }
           }
         }
       ]
@@ -329,29 +821,69 @@
       "item": [
         {
           "name": "Mi perfil (Ana)",
-          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
-            "pm.test('200 sin passwordHash', () => {",
-            "  pm.response.to.have.status(200);",
-            "  pm.expect(pm.response.json()).to.not.have.property('passwordHash');",
-            "});"
-          ] } }],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200 sin passwordHash', () => {",
+                  "  pm.response.to.have.status(200);",
+                  "  pm.expect(pm.response.json()).to.not.have.property('passwordHash');",
+                  "});"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "GET",
-            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{tokenAna}}" }] },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenAna}}"
+                }
+              ]
+            },
             "url": "{{baseUrl}}/api/users/me"
           }
         },
         {
           "name": "Editar área (Ana, id 2)",
-          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
-            "pm.test('200', () => pm.response.to.have.status(200));"
-          ] } }],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "PATCH",
-            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{tokenAna}}" }] },
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenAna}}"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": "{{baseUrl}}/api/users/2",
-            "body": { "mode": "raw", "raw": "{\n  \"area\": \"CONTABILIDAD\"\n}" }
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"area\": \"CONTABILIDAD\"\n}"
+            }
           }
         }
       ]
@@ -363,44 +895,116 @@
           "name": "Listar SLA",
           "request": {
             "method": "GET",
-            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{tokenAdmin}}" }] },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenAdmin}}"
+                }
+              ]
+            },
             "url": "{{baseUrl}}/api/sla"
           }
         },
         {
           "name": "Actualizar SLA MEDIA a 20 h",
-          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
-            "pm.test('200', () => pm.response.to.have.status(200));"
-          ] } }],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "PUT",
-            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{tokenAdmin}}" }] },
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenAdmin}}"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": "{{baseUrl}}/api/sla",
-            "body": { "mode": "raw", "raw": "{\n  \"prioridad\": \"MEDIA\",\n  \"horasLimite\": 20\n}" }
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"prioridad\": \"MEDIA\",\n  \"horasLimite\": 20\n}"
+            }
           }
         },
         {
           "name": "SLA CRITICA a 12 h (400)",
-          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
-            "pm.test('400', () => pm.response.to.have.status(400));"
-          ] } }],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "PUT",
-            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{tokenAdmin}}" }] },
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenAdmin}}"
+                }
+              ]
+            },
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": "{{baseUrl}}/api/sla",
-            "body": { "mode": "raw", "raw": "{\n  \"prioridad\": \"CRITICA\",\n  \"horasLimite\": 12\n}" }
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"prioridad\": \"CRITICA\",\n  \"horasLimite\": 12\n}"
+            }
           }
         },
         {
           "name": "Usuario intenta ver SLA (403)",
-          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
-            "pm.test('403', () => pm.response.to.have.status(403));"
-          ] } }],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('403', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "GET",
-            "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{tokenAna}}" }] },
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenAna}}"
+                }
+              ]
+            },
             "url": "{{baseUrl}}/api/sla"
           }
         }
@@ -409,43 +1013,163 @@
     {
       "name": "6. Observabilidad",
       "item": [
-        { "name": "Health (público)", "request": { "method": "GET", "url": "{{baseUrl}}/actuator/health" } },
-        { "name": "Info (público)", "request": { "method": "GET", "url": "{{baseUrl}}/actuator/info" } },
+        {
+          "name": "Health (público)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/actuator/health"
+          }
+        },
+        {
+          "name": "Info (público)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/actuator/info"
+          }
+        },
         {
           "name": "Métricas disponibles",
-          "request": { "method": "GET", "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{tokenAdmin}}" }] }, "url": "{{baseUrl}}/actuator/metrics" }
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenAdmin}}"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/actuator/metrics"
+          }
         },
         {
           "name": "Tickets creados (RED)",
-          "request": { "method": "GET", "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{tokenAdmin}}" }] }, "url": "{{baseUrl}}/actuator/metrics/helpflow.tickets.creados?tag=categoria:RED" }
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenAdmin}}"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/actuator/metrics/helpflow.tickets.creados?tag=categoria:RED"
+          }
         },
         {
           "name": "Tiempo de primera respuesta",
-          "request": { "method": "GET", "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{tokenAdmin}}" }] }, "url": "{{baseUrl}}/actuator/metrics/helpflow.tickets.primera.respuesta" }
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenAdmin}}"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/actuator/metrics/helpflow.tickets.primera.respuesta"
+          }
         },
         {
           "name": "Tiempo de resolución",
-          "request": { "method": "GET", "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{tokenAdmin}}" }] }, "url": "{{baseUrl}}/actuator/metrics/helpflow.tickets.resolucion" }
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenAdmin}}"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/actuator/metrics/helpflow.tickets.resolucion"
+          }
         },
         {
           "name": "Tickets vencidos",
-          "request": { "method": "GET", "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{tokenAdmin}}" }] }, "url": "{{baseUrl}}/actuator/metrics/helpflow.tickets.vencidos" }
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenAdmin}}"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/actuator/metrics/helpflow.tickets.vencidos"
+          }
         },
         {
           "name": "Fallas de autenticación",
-          "request": { "method": "GET", "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{tokenAdmin}}" }] }, "url": "{{baseUrl}}/actuator/metrics/helpflow.auth.fallos" }
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenAdmin}}"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/actuator/metrics/helpflow.auth.fallos"
+          }
         },
         {
           "name": "Accesos denegados",
-          "request": { "method": "GET", "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{tokenAdmin}}" }] }, "url": "{{baseUrl}}/actuator/metrics/helpflow.auth.accesos.denegados" }
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenAdmin}}"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/actuator/metrics/helpflow.auth.accesos.denegados"
+          }
         },
         {
           "name": "Prometheus",
-          "request": { "method": "GET", "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{tokenAdmin}}" }] }, "url": "{{baseUrl}}/actuator/prometheus" }
+          "request": {
+            "method": "GET",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenAdmin}}"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/actuator/prometheus"
+          }
         },
         {
           "name": "Ejecutar escalamiento ahora",
-          "request": { "method": "POST", "auth": { "type": "bearer", "bearer": [{ "key": "token", "value": "{{tokenAdmin}}" }] }, "url": "{{baseUrl}}/api/tickets/escalamiento" }
+          "request": {
+            "method": "POST",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{tokenAdmin}}"
+                }
+              ]
+            },
+            "url": "{{baseUrl}}/api/tickets/escalamiento"
+          }
         }
       ]
     },
@@ -454,28 +1178,60 @@
       "item": [
         {
           "name": "Dispatch (repetir: misma respuesta)",
-          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
-            "pm.test('200', () => pm.response.to.have.status(200));",
-            "const r = pm.response.json();",
-            "pm.test('técnico de RED (TEC-009 a TEC-012)', () => pm.expect(['TEC-009','TEC-010','TEC-011','TEC-012']).to.include(r.tecnicoId));"
-          ] } }],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('200', () => pm.response.to.have.status(200));",
+                  "const r = pm.response.json();",
+                  "pm.test('técnico de RED (TEC-009 a TEC-012)', () => pm.expect(['TEC-009','TEC-010','TEC-011','TEC-012']).to.include(r.tecnicoId));"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": "{{dispatchUrl}}/technician-dispatch",
-            "body": { "mode": "raw", "raw": "{\n  \"ticketId\": 125,\n  \"categoria\": \"RED\",\n  \"prioridad\": \"ALTA\"\n}" }
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ticketId\": 125,\n  \"categoria\": \"RED\",\n  \"prioridad\": \"ALTA\"\n}"
+            }
           }
         },
         {
           "name": "Dispatch con categoría inválida (400)",
-          "event": [{ "listen": "test", "script": { "type": "text/javascript", "exec": [
-            "pm.test('400', () => pm.response.to.have.status(400));"
-          ] } }],
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('400', () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "url": "{{dispatchUrl}}/technician-dispatch",
-            "body": { "mode": "raw", "raw": "{\n  \"ticketId\": 125,\n  \"categoria\": \"COCINA\",\n  \"prioridad\": \"ALTA\"\n}" }
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"ticketId\": 125,\n  \"categoria\": \"COCINA\",\n  \"prioridad\": \"ALTA\"\n}"
+            }
           }
         }
       ]

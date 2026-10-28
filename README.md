@@ -1,5 +1,14 @@
 # HelpFlow – Sistema Integral de Gestión de Soporte TI
 
+**Contenido:** [1. Descripción](#1-descripción) · [2. Arquitectura](#2-arquitectura) ·
+[3. Tecnologías](#3-tecnologías) · [4. Ejecución](#4-ejecución) · [5. Usuarios de prueba](#5-usuarios-de-prueba) ·
+[6. Endpoints](#6-endpoints) · [7. Roles y control de acceso](#7-roles-y-control-de-acceso) ·
+[8. Flujo de asignación](#8-flujo-de-asignación) · [9. Transiciones de estado](#9-transiciones-de-estado) ·
+[10. SLA y escalamiento](#10-reglas-de-sla-y-escalamiento) · [11. Errores](#11-errores-problemdetail-rfc-7807) ·
+[12. Observabilidad](#12-observabilidad) · [13. Swagger y Postman](#13-swagger-y-postman) ·
+[14. Supuestos](#14-supuestos-y-decisiones) · [15. Mantenimiento](#15-guía-de-mantenimiento) ·
+[16. Solución de problemas](#16-solución-de-problemas) · [17. Evidencias](#17-evidencias)
+
 ## 1. Descripción
 
 HelpFlow gestionaba sus solicitudes de soporte por correo, mensajes y hojas de cálculo, lo que producía tickets
@@ -82,7 +91,7 @@ sequenceDiagram
 
 Java 21, Spring Boot 3.5, Spring Security + JJWT, Spring Data JPA + Hibernate, PostgreSQL 16, Flyway, MapStruct,
 Bean Validation, Actuator + Micrometer + Prometheus, springdoc-openapi (Swagger), JUnit 5, Mockito,
-Testcontainers, Docker y docker-compose.
+Testcontainers, JaCoCo, Docker y docker-compose.
 
 ## 4. Ejecución
 
@@ -115,18 +124,41 @@ cd technician-dispatch-service && mvn spring-boot:run
 cd support-ticket-service && mvn spring-boot:run
 ```
 
-Variables de entorno de support-ticket-service (todas tienen valor por defecto para desarrollo):
-`DB_URL`, `DB_USER`, `DB_PASSWORD`, `DISPATCH_URL`, `JWT_SECRET`, `JWT_EXPIRATION_MINUTES`.
+### Variables de entorno (support-ticket-service)
 
-### Pruebas
+Todas tienen un valor por defecto para desarrollo; en docker-compose se definen en `docker-compose.yml`.
+
+| Variable | Por defecto | Uso |
+| --- | --- | --- |
+| `DB_URL` | `jdbc:postgresql://localhost:5432/helpflow` | Conexión a PostgreSQL |
+| `DB_USER` / `DB_PASSWORD` | `helpflow` / `helpflow` | Credenciales de la base |
+| `DISPATCH_URL` | `http://localhost:8081` | URL de technician-dispatch-service |
+| `JWT_SECRET` | clave de desarrollo | Clave HS256 en Base64 (mínimo 32 bytes). **Cámbiala en producción** |
+| `JWT_EXPIRATION_MINUTES` | `60` | Vigencia del token |
+
+### Pruebas y cobertura
 
 ```bash
 cd support-ticket-service && mvn verify          # requiere Docker encendido (Testcontainers)
 cd technician-dispatch-service && mvn verify
 ```
 
-El Dockerfile compila con `-DskipTests` porque dentro del build de Docker no hay Docker para Testcontainers;
-las pruebas se ejecutan antes con `mvn verify`.
+`mvn verify` ejecuta todas las pruebas, genera el reporte de cobertura con JaCoCo y **falla si la cobertura de
+líneas es menor al 80 %**. El reporte queda en `target/site/jacoco/index.html` de cada servicio (en Mac:
+`open target/site/jacoco/index.html`). Se excluyen del cálculo la clase de arranque de Spring y el código generado
+por MapStruct.
+
+| Nivel | Qué cubre | Herramientas |
+| --- | --- | --- |
+| Dominio | Máquina de estados, SLA, escalamiento, reglas de asignación con sus bordes | JUnit 5, pruebas parametrizadas |
+| Casos de uso | Flujo de asignación, alternativos, dispatch caído, transiciones, reasignación, usuarios, SLA | Mockito (`@Mock`, `ArgumentCaptor`, `InOrder`) |
+| Adaptadores | Cliente HTTP a dispatch (servidor HTTP real), métricas, JWT, tarea programada, errores, Bean Validation | JUnit + servidores y registros en memoria |
+| Integración | Flujo completo login → ticket → gestión → cierre, seguridad, expiración de tokens, errores HTTP | Spring Boot Test, MockMvc, Testcontainers |
+
+Las pruebas de integración usan un PostgreSQL real en contenedor, limpian los datos antes de cada prueba
+(solo quedan los de `V3`) y reemplazan technician-dispatch-service por un mock, así que son independientes y
+reproducibles. El Dockerfile compila con `-DskipTests` porque dentro del build de Docker no hay Docker para
+Testcontainers; las pruebas se ejecutan antes con `mvn verify`.
 
 ## 5. Usuarios de prueba
 
@@ -182,6 +214,53 @@ Carga máxima de cada técnico: 5 tickets activos. TEC-004 está INACTIVO para d
 
 El control se aplica en dos capas: `SecurityConfig` filtra por rol según la ruta, y `TicketAccessChecker`
 (capa de aplicación) valida la propiedad del ticket, que depende de los datos.
+
+### Flujo de autenticación y autorización
+
+```mermaid
+sequenceDiagram
+    actor C as Cliente
+    participant F as JwtAuthenticationFilter
+    participant S as SecurityConfig
+    participant UC as Caso de uso
+    participant A as TicketAccessChecker
+    C->>UC: POST /auth/login (correo, contraseña)
+    UC-->>C: token JWT HS256 (sub, uid, rol, exp = 60 min)
+    C->>F: petición con Authorization: Bearer token
+    alt sin token
+        F->>S: sigue sin autenticar
+        S-->>C: 401 no-autenticado
+    else token vencido
+        F-->>C: 401 token-expirado
+    else firma o formato inválido
+        F-->>C: 401 token-invalido
+    else token válido
+        F->>S: AuthenticatedActor con su rol
+        alt el rol no tiene permiso en la ruta
+            S-->>C: 403 acceso-denegado
+        else rol permitido
+            S->>UC: ejecuta el caso de uso
+            UC->>A: ¿el ticket es suyo o lo tiene asignado?
+            alt no es dueño ni técnico asignado (y no es admin)
+                A-->>C: 403 acceso-denegado
+            else autorizado
+                UC-->>C: 200 / 201
+            end
+        end
+    end
+```
+
+| Situación | Respuesta | `type` del ProblemDetail |
+| --- | --- | --- |
+| Petición sin token | 401 | `no-autenticado` |
+| Token vencido (más de 60 min) | 401 | `token-expirado` (el cliente debe volver a iniciar sesión) |
+| Token alterado, con otra clave o mal formado | 401 | `token-invalido` |
+| Correo o contraseña incorrectos en el login | 401 | `credenciales-invalidas` (mismo mensaje para ambos casos) |
+| Rol sin permiso para la ruta | 403 | `acceso-denegado` |
+| Ticket o perfil ajeno | 403 | `acceso-denegado` |
+
+Cada 401 y 403 incrementa las métricas `helpflow.auth.fallos` (con el motivo como tag) y
+`helpflow.auth.accesos.denegados`.
 
 ## 8. Flujo de asignación
 
@@ -255,7 +334,9 @@ Todas las respuestas de error usan el mismo formato:
 | Validación de campos | 400 | `validacion` (incluye `errores` por campo) |
 | JSON mal formado o enum inválido | 400 | `json-invalido` |
 | Parámetro de ruta inválido (`/api/tickets/abc`) | 400 | `parametro-invalido` |
-| Sin token / token inválido | 401 | `no-autenticado` |
+| Sin token | 401 | `no-autenticado` |
+| Token vencido | 401 | `token-expirado` |
+| Token alterado o mal formado | 401 | `token-invalido` |
 | Credenciales incorrectas | 401 | `credenciales-invalidas` |
 | Rol sin permiso / ticket ajeno | 403 | `acceso-denegado` |
 | Recurso inexistente | 404 | `no-encontrado` |
@@ -299,8 +380,67 @@ Ejemplo: `GET /actuator/metrics/helpflow.tickets.creados?tag=categoria:RED` (tok
 - Valores de SLA, umbral de escalamiento (25 %) y carga máxima (5) definidos por el equipo.
 - La primera respuesta se mide cuando el técnico pasa el ticket a EN_PROGRESO.
 - Para las evidencias de tickets vencidos y escalados se ajustaron por SQL las fechas de tickets de prueba.
+- **Límite conocido:** si dos tickets se asignan al mismo técnico en el mismo instante, ambos pueden leer la carga
+  antes de guardarse y superar la carga máxima por uno. Se resolvería con bloqueo optimista (`@Version`) o un
+  bloqueo de fila sobre el técnico.
 
-## 15. Evidencias
+## 15. Guía de mantenimiento
+
+### Cambiar el esquema de la base
+
+1. Crea un archivo nuevo en `support-ticket-service/src/main/resources/db/migration/` con el siguiente número:
+   `V4__descripcion.sql`, `V5__...`.
+2. **Nunca edites una migración ya aplicada** (V1–V3): Flyway guarda su checksum y la aplicación no arrancaría.
+3. Ajusta la entidad JPA correspondiente: `ddl-auto: validate` hace fallar el arranque si entidad y tabla no coinciden.
+
+### Agregar un estado de ticket
+
+1. Agrega el valor al enum `TicketStatus` y sus transiciones en `puedePasarA`.
+2. Crea una migración que actualice el `CHECK` de la columna `estado` en `tickets` (y `estado_nuevo` si aplica).
+3. Si el estado exige observación, agrégalo a `StatusChangeValidator`.
+4. Agrega los casos a `TicketStatusTest` y vuelve a ejecutar `mvn verify`.
+
+### Agregar una categoría o un técnico
+
+- **Técnico:** inserta el usuario (rol `ROLE_TECNICO`) y su fila en `tecnicos` con una migración. Si debe recibir
+  sugerencias de dispatch, el código `TEC-xxx` tiene que estar en el grupo de su categoría en
+  `TechnicianDispatchService`.
+- **Categoría:** enum `Category`, `CHECK` de las tablas `tickets` y `tecnicos`, patrón de `DispatchRequest` y el mapa
+  de grupos de `TechnicianDispatchService`.
+
+### Operación
+
+| Tarea | Cómo |
+| --- | --- |
+| Cambiar horas de SLA | `PUT /api/sla` como admin (aplica a tickets nuevos; respeta los máximos por prioridad) |
+| Desactivar un usuario | `PATCH /api/users/{id}` con `{"estado":"INACTIVO"}` como admin |
+| Reintentar una asignación | `POST /api/tickets/{id}/asignar` como admin |
+| Cambiar la frecuencia del escalamiento | Propiedad `helpflow.escalamiento.cron` (expresión cron de Spring) |
+| Rotar la clave JWT | Genera una nueva con `openssl rand -base64 32`, defínela en `JWT_SECRET` y reinicia; los tokens anteriores dejan de ser válidos |
+| Ver logs | `docker compose logs -f support-ticket-service` (JSON; filtra por `traceId`) |
+| Reiniciar la base desde cero | `docker compose down -v` y `docker compose up -d` (Flyway vuelve a aplicar V1–V3) |
+
+### Antes de subir cambios
+
+1. `mvn verify` en ambos servicios (pruebas + cobertura mínima de 80 %).
+2. Si cambiaste endpoints, actualiza la colección de Postman y la tabla de endpoints de este README.
+3. `docker compose up --build -d` y una ejecución completa de la colección.
+
+## 16. Solución de problemas
+
+| Síntoma | Causa probable | Solución |
+| --- | --- | --- |
+| `Could not find a valid Docker environment` al correr pruebas | Docker Desktop apagado | Ábrelo y espera a que esté listo |
+| `Coverage checks have not been met` | Cobertura menor al 80 % | Abre `target/site/jacoco/index.html` y agrega pruebas a las clases en rojo |
+| `port is already allocated` | Puerto 8080, 8081 o 5433 ocupado | Detén la app que lo usa o cambia el puerto en `docker-compose.yml` |
+| La app no arranca: `Schema-validation: missing column` | Entidad y migración no coinciden | Revisa la última migración y la entidad |
+| La app no arranca: `Migration checksum mismatch` | Se editó una migración ya aplicada | Revierte el cambio y crea una migración nueva |
+| 401 `token-expirado` | El token tiene más de 60 minutos | Vuelve a hacer login |
+| 401 `token-invalido` tras reiniciar | Cambió `JWT_SECRET` | Vuelve a hacer login |
+| Tickets quedan ABIERTO con historial `SIN_TECNICO` | Dispatch caído y sin técnicos alternativos en la sede | Revisa `docker compose ps`, luego `POST /api/tickets/{id}/asignar` |
+| `/actuator/metrics` responde 403 | El token no es de admin | Usa `admin@helpflow.com` |
+
+## 17. Evidencias
 
 Capturas en `docs/capturas/`:
 
@@ -321,3 +461,4 @@ Capturas en `docs/capturas/`:
 | docker compose ps | `13-docker.png` |
 | Swagger | `14-swagger.png` |
 | MapStruct generado | `15-mapstruct.png` |
+| Reporte de cobertura JaCoCo | `16-cobertura.png` |
