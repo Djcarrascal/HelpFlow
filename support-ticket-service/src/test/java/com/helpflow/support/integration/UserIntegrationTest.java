@@ -19,6 +19,7 @@ class UserIntegrationTest extends AbstractIntegrationTest {
                         """))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.rol").value("ROLE_USUARIO"))
+                .andExpect(jsonPath("$.estado").value("ACTIVO"))
                 .andExpect(jsonPath("$.passwordHash").doesNotExist());
 
         String body = mvc.perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON)
@@ -35,11 +36,12 @@ class UserIntegrationTest extends AbstractIntegrationTest {
         mvc.perform(patch("/api/users/{id}", id).header("Authorization", bearer(token))
                         .contentType(MediaType.APPLICATION_JSON).content("{\"area\":\"LOGISTICA\"}"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.area").value("LOGISTICA"));
+                .andExpect(jsonPath("$.area").value("LOGISTICA"))
+                .andExpect(jsonPath("$.sede").value("MEDELLIN"));
     }
 
     @Test
-    void rechazaCorreoNoCorporativoYDocumentoDuplicado() throws Exception {
+    void rechazaCorreoNoCorporativoYDuplicados() throws Exception {
         mvc.perform(post("/auth/register").contentType(MediaType.APPLICATION_JSON).content("""
                         {"documento":"99887766","nombre":"Pedro","correo":"pedro@gmail.com",
                          "password":"Segura2026*","sede":"MEDELLIN","area":"VENTAS"}
@@ -53,13 +55,42 @@ class UserIntegrationTest extends AbstractIntegrationTest {
                          "password":"Segura2026*","sede":"MEDELLIN","area":"VENTAS"}
                         """))
                 .andExpect(status().isConflict());
+
+        // el correo de Ana con otras mayúsculas también es duplicado
+        mvc.perform(post("/auth/register").contentType(MediaType.APPLICATION_JSON).content("""
+                        {"documento":"44556677","nombre":"Copia","correo":"ANA@helpflow.com",
+                         "password":"Segura2026*","sede":"MEDELLIN","area":"VENTAS"}
+                        """))
+                .andExpect(status().isConflict());
     }
 
     @Test
-    void loginConClaveIncorrectaResponde401() throws Exception {
+    void unUsuarioNoPuedeVerElPerfilDeOtro() throws Exception {
+        // Luis es el usuario 3 de los datos iniciales
+        mvc.perform(get("/api/users/3").header("Authorization", bearer(login("ana@helpflow.com"))))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void unUsuarioNoPuedeCambiarseElEstado() throws Exception {
+        mvc.perform(patch("/api/users/2").header("Authorization", bearer(login("ana@helpflow.com")))
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"estado\":\"INACTIVO\"}"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void elAdminDesactivaUnUsuarioYEsteYaNoPuedeEntrar() throws Exception {
+        String admin = login("admin@helpflow.com");
+        mvc.perform(get("/api/users/3").header("Authorization", bearer(admin)))
+                .andExpect(jsonPath("$.correo").value("luis@helpflow.com"));
+
+        mvc.perform(patch("/api/users/3").header("Authorization", bearer(admin))
+                        .contentType(MediaType.APPLICATION_JSON).content("{\"estado\":\"INACTIVO\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.estado").value("INACTIVO"));
+
         mvc.perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"correo\":\"ana@helpflow.com\",\"password\":\"incorrecta\"}"))
-                .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.type").value("https://api.helpflow.com/errors/credenciales-invalidas"));
+                        .content("{\"correo\":\"luis@helpflow.com\",\"password\":\"Password123*\"}"))
+                .andExpect(status().isUnprocessableEntity());
     }
 }
