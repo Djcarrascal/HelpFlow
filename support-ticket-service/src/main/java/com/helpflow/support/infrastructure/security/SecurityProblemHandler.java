@@ -31,15 +31,17 @@ public class SecurityProblemHandler implements AuthenticationEntryPoint, AccessD
         this.registry = registry;
     }
 
-    // 401: sin token o token inválido
+    // 401: sin token (no-autenticado), token vencido (token-expirado) o token falso (token-invalido)
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response,
                          AuthenticationException ex) throws IOException {
+        Object code = request.getAttribute(JwtAuthenticationFilter.AUTH_ERROR_CODE);
         Object motivo = request.getAttribute(JwtAuthenticationFilter.AUTH_ERROR);
+        String tipo = code != null ? code.toString() : "no-autenticado";
         String detalle = motivo != null ? motivo.toString() : "Se requiere un token Bearer";
-        registry.counter("helpflow.auth.fallos", "motivo", "token").increment();
+        registry.counter("helpflow.auth.fallos", "motivo", tipo).increment();
         log.warn("autenticación fallida en {}: {}", request.getRequestURI(), detalle);
-        escribir(response, ProblemDetails.of(HttpStatus.UNAUTHORIZED, "no-autenticado",
+        escribir(response, ProblemDetails.of(HttpStatus.UNAUTHORIZED, tipo,
                 "No autenticado", detalle, request.getRequestURI()));
     }
 
